@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 public class CsvQuestionDao implements QuestionDao {
@@ -21,19 +22,19 @@ public class CsvQuestionDao implements QuestionDao {
     public List<Question> findAll() {
         try (InputStream inputStream = getClass()
                 .getClassLoader().getResourceAsStream(fileNameProvider.getTestFileName())) {
-            if (inputStream == null) {
+            if (Objects.isNull(inputStream)) {
                 throw new QuestionReadException("File is empty: " + fileNameProvider.getTestFileName());
             }
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            return (new CsvToBeanBuilder<QuestionDto>(bufferedReader)
+            return new CsvToBeanBuilder<QuestionDto>(bufferedReader)
                     .withSeparator(';')
                     .withSkipLines(1)
                     .withType(QuestionDto.class)
                     .build()
                     .parse()
                     .stream()
-                    .map(QuestionDto::toDomainObject).toList());
+                    .map(QuestionDto::toDomainObject).toList();
 
         } catch (IOException e) {
             throw new QuestionReadException("Something went wrong while reading", e);
